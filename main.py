@@ -1,73 +1,68 @@
-import requests
-import datetime
-from time import sleep
-
-class BotHandler:
-
-    def __init__(self, token):
-        self.token = token
-        self.api_url = "https://api.telegram.org/bot{}/".format(token)
-
-    def get_updates(self, offset=None, timeout=30):
-        method = 'getUpdates'
-        params = {'timeout': timeout, 'offset': offset}
-        resp = requests.get(self.api_url + method, params)
-        result_json = resp.json()['result']
-        return result_json
-
-    def send_message(self, chat_id, text):
-        params = {'chat_id': chat_id, 'text': text}
-        method = 'sendMessage'
-        resp = requests.post(self.api_url + method, params)
-        return resp
-
-    def get_last_update(self):
-        get_result = self.get_updates()
-
-        if len(get_result) > 0:
-            last_update = get_result[-1]
-        else:
-            last_update = get_result[len(get_result)]
-
-        return last_update
-
-greet_bot = BotHandler('1063868677:AAGfaq8tqOG4Z_kAiAhS3WNviczNBJG02dY')  
-greetings = ('здравствуй', 'привет', 'ку', 'здорово')  
-now = datetime.datetime.now()
-
-
-
-def main():  
-    new_offset = None
-    today = now.day
-    hour = now.hour
-
-    while True:
-        greet_bot.get_updates(new_offset)
-
-        last_update = greet_bot.get_last_update()
-
-        last_update_id = last_update['update_id']
-        last_chat_text = last_update['message']['text']
-        last_chat_id = last_update['message']['chat']['id']
-        last_chat_name = last_update['message']['chat']['first_name']
-
-        if last_chat_text.lower() in greetings and today == now.day and 6 <= hour < 12:
-            greet_bot.send_message(last_chat_id, 'Доброе утро, {}'.format(last_chat_name))
-            today += 1
-
-        elif last_chat_text.lower() in greetings and today == now.day and 12 <= hour < 17:
-            greet_bot.send_message(last_chat_id, 'Добрый день, {}'.format(last_chat_name))
-            today += 1
-
-        elif last_chat_text.lower() in greetings and today == now.day and 17 <= hour < 23:
-            greet_bot.send_message(last_chat_id, 'Добрый вечер, {}'.format(last_chat_name))
-            today += 1
-        greet_bot.send_message(last_chat_id,'test')
-        new_offset = last_update_id + 1
-
-if __name__ == '__main__':  
+import telebot
+import os
+import subprocess
+from telebot import types
+capfile = False
+directory = 'E:/1'
+target = ''
+bot = telebot.TeleBot('1063868677:AAGfaq8tqOG4Z_kAiAhS3WNviczNBJG02dY')
+@bot.message_handler(content_types=['text'])
+def get_text_messages(message):
+    if message.text == "Привет":
+        bot.send_message(message.from_user.id, "Привет, сейчас я расскажу тебе гороскоп на сегодня.")
+    elif message.text == "/help":
+        bot.send_message(message.from_user.id, "Напиши Привет")
+    else:
+        bot.send_message(message.from_user.id, "Цель установлена")
+        target = message.text
+    # Готовим кнопки
+    keyboard = types.InlineKeyboardMarkup()
+    # По очереди готовим текст и обработчик для каждого знака зодиака
+    key_oven = types.InlineKeyboardButton(text='передать .cap', callback_data='capfile')
+    keyboard.add(key_oven)
+    key_oven = types.InlineKeyboardButton(text='список файлов', callback_data='filelist')
+    keyboard.add(key_oven)
+    key_oven = types.InlineKeyboardButton(text='анализ файла', callback_data='filecrack')
+    keyboard.add(key_oven)
+    # Показываем все кнопки сразу и пишем сообщение о выборе
+    bot.send_message(message.from_user.id, text='Меню обработки', reply_markup=keyboard)
+# Обработчик нажатий на кнопки
+@bot.callback_query_handler(func=lambda call: True)
+def callback_worker(call):
+  # Если нажали на одну из 12 кнопок — выводим гороскоп
+    if call.data == "capfile": 
+        bot.send_message(call.message.chat.id, 'ожидаю файл')
+        capfile = True
+    if call.data == "filelist":
+        msg = ''
+        files = os.listdir(directory)
+        for i in files:
+            msg = msg + '\n' + i
+        bot.send_message(call.message.chat.id, msg)
+    if call.data == "filecrack":
+        args = ['C:/Users/User/Desktop/hashcat-6.1.1/hashcat.exe','-t','32', '--quiet', '--status', '-a', '7', 'example0.hash', '?a?a?a?a', 'example.dict']
+        child = subprocess.Popen(args, cwd='C:/Users/User/Desktop/hashcat-6.1.1', stdout=subprocess.PIPE, encoding='utf8')
+        data = child.communicate()
+        
+            #for line in data:
+            #bot.send_message(call.message.chat.id, line)
+            #print(line)
+        while child.poll() is None:
+            print (data)
+        
+@bot.message_handler(content_types=['document'])
+def handle_docs_photo(message):
     try:
-        main()
-    except KeyboardInterrupt:
-        exit()
+        #chat_id = message.chat.id
+
+        file_info = bot.get_file(message.document.file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+
+        src = 'E:/1/' + message.document.file_name 
+        with open(src, 'wb') as new_file:
+            new_file.write(downloaded_file)
+
+        bot.reply_to(message, "Пожалуй, я сохраню это")
+    except Exception as e:
+        bot.reply_to(message, e)
+bot.polling(none_stop=True, interval=0)
