@@ -3,7 +3,7 @@ import os
 import subprocess
 from telebot import types
 capfile = False
-directory = 'E:/1'
+directory = 'C:/Users/user/Desktop/1'
 target = ''
 bot = telebot.TeleBot('1063868677:AAGfaq8tqOG4Z_kAiAhS3WNviczNBJG02dY')
 @bot.message_handler(content_types=['text'])
@@ -40,15 +40,15 @@ def callback_worker(call):
             msg = msg + '\n' + i
         bot.send_message(call.message.chat.id, msg)
     if call.data == "filecrack":
-        args = ['C:/Users/User/Desktop/hashcat-6.1.1/hashcat.exe','-t','32', '--quiet', '--status', '-a', '7', 'example0.hash', '?a?a?a?a', 'example.dict']
+        args = ['C:/Users/User/Desktop/hashcat-6.1.1/hashcat.exe', '-t', '32', '--progress-only', '-a', '7', 'example0.hash', '?a?a?a?a', 'example.dict']
         child = subprocess.Popen(args, cwd='C:/Users/User/Desktop/hashcat-6.1.1', stdout=subprocess.PIPE, encoding='utf8')
         data = child.communicate()
-        
             #for line in data:
             #bot.send_message(call.message.chat.id, line)
             #print(line)
         while child.poll() is None:
-            print (data)
+            for line in data:
+                print (line)
         
 @bot.message_handler(content_types=['document'])
 def handle_docs_photo(message):
