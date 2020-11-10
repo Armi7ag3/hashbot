@@ -25,7 +25,7 @@ def get_text_messages(message):
     key_oven = types.InlineKeyboardButton(text='анализ файла', callback_data='filecrack')
     keyboard.add(key_oven)
     # Показываем все кнопки сразу и пишем сообщение о выборе
-    bot.send_message(message.from_user.id, text='Меню обработки', reply_markup=keyboard)
+    bot.send_message(message.from_user.id, text='Меню обработки:', reply_markup=keyboard)
 # Обработчик нажатий на кнопки
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
