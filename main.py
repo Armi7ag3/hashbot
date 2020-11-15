@@ -3,8 +3,8 @@ import os
 import subprocess
 from telebot import types
 capfile = False
-directory = 'C:/Users/user/Desktop/1'
-target = ''
+directory = 'E:/1'
+target = '1.hccapx'
 bot = telebot.TeleBot('1063868677:AAGfaq8tqOG4Z_kAiAhS3WNviczNBJG02dY')
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
@@ -14,7 +14,9 @@ def get_text_messages(message):
         bot.send_message(message.from_user.id, "Напиши Привет")
     else:
         bot.send_message(message.from_user.id, "Цель установлена")
-        target = message.text
+        ttt = open('target.txt','w')
+        ttt.write(directory + '/' + message.text)
+        ttt.close()
     # Готовим кнопки
     keyboard = types.InlineKeyboardMarkup()
     # По очереди готовим текст и обработчик для каждого знака зодиака
@@ -40,7 +42,10 @@ def callback_worker(call):
             msg = msg + '\n' + i
         bot.send_message(call.message.chat.id, msg)
     if call.data == "filecrack":
-        args = ['C:/Users/User/Desktop/hashcat-6.1.1/hashcat.exe', '-t', '32', '--progress-only', '-a', '7', 'example0.hash', '?a?a?a?a', 'example.dict']
+        ttt = open('target.txt','r')
+        target = ttt.readline()
+        ttt.close
+        args = ['C:/Users/User/Desktop/hashcat-6.1.1/hashcat.exe', '-a', '3', '-m', '2500', '--quiet', target, '?d?d?d?d?d?d?d?d']
         child = subprocess.Popen(args, cwd='C:/Users/User/Desktop/hashcat-6.1.1', stdout=subprocess.PIPE, encoding='utf8')
         data = child.communicate()
             #for line in data:
@@ -58,7 +63,7 @@ def handle_docs_photo(message):
         file_info = bot.get_file(message.document.file_id)
         downloaded_file = bot.download_file(file_info.file_path)
 
-        src = 'C:/Users/user/Desktop/1/' + message.document.file_name 
+        src = 'E:/1/' + message.document.file_name 
         with open(src, 'wb') as new_file:
             new_file.write(downloaded_file)
 
